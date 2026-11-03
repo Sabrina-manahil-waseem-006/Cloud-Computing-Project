@@ -1,0 +1,10 @@
+<!DOCTYPE html>
+<html>
+<head><title>CEA Three-Tier App</title></head>
+<body>
+    <h1>Web Tier is Working!</h1>
+    <p>This is served by Nginx.</p>
+    <button onclick="fetch('/api/health').then(r=>r.text()).then(t=>alert(t))">Test App Tier</button>
+    <button onclick="fetch('/api/db').then(r=>r.text()).then(t=>alert(t))">Test Database</button>
+</body>
+</html>
