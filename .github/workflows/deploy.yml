@@ -35,12 +35,9 @@ jobs:
           chmod 600 ~/.ssh/id_rsa
 
       - name: Deploy to VM via SSH
-        uses: appleboy/ssh-action@v1.0.3
-        with:
-          host: ${{ secrets.VM_HOST }}
-          username: ${{ secrets.VM_USER }}
-          key: ${{ secrets.VM_SSH_KEY }}
-          script: |
+        run: |
+          ssh -o StrictHostKeyChecking=no -i ~/.ssh/id_rsa ${{ secrets.VM_USER }}@${{ secrets.VM_HOST }} "
             cd /home/azureuser/app || exit 1
             docker compose pull
-            docker compose up -d 
+            docker compose up -d
+          " 
