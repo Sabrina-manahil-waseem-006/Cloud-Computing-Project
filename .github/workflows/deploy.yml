@@ -28,16 +28,15 @@ jobs:
           docker build -t ${{ secrets.DOCKERHUB_USERNAME }}/cea-app:latest ./app
           docker push ${{ secrets.DOCKERHUB_USERNAME }}/cea-app:latest
 
-      - name: Prepare SSH Key
-        run: |
-          mkdir -p ~/.ssh
-          echo "${{ secrets.VM_SSH_KEY }}" | tr -d '\r' > ~/.ssh/id_rsa
-          chmod 600 ~/.ssh/id_rsa
-
       - name: Deploy to VM via SSH
-        run: |
-          ssh -o StrictHostKeyChecking=no -i ~/.ssh/id_rsa ${{ secrets.VM_USER }}@${{ secrets.VM_HOST }} "
+        uses: appleboy/ssh-action@v1.0.3
+        with:
+          host: ${{ secrets.VM_HOST }}
+          username: ${{ secrets.VM_USER }}
+          key: ${{ secrets.VM_SSH_KEY }}
+          script: |
+            echo "${{ secrets.VM_SSH_KEY }}" | base64 -d > /tmp/deploy_key
+            chmod 600 /tmp/deploy_key
             cd /home/azureuser/app || exit 1
             docker compose pull
-            docker compose up -d
-          " 
+            docker compose up -d 
