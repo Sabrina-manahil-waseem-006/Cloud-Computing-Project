@@ -34,7 +34,11 @@ jobs:
           echo "${{ secrets.VM_SSH_KEY }}" | base64 -d > ~/.ssh/id_rsa
           chmod 600 ~/.ssh/id_rsa
           ssh -o StrictHostKeyChecking=no -i ~/.ssh/id_rsa ${{ secrets.VM_USER }}@${{ secrets.VM_HOST }} "
-            cd /home/azureuser/app || exit 1
+            DEPLOY_DIR='${{ secrets.VM_APP_DIR }}'
+            if [ -z \"\$DEPLOY_DIR\" ]; then
+              DEPLOY_DIR=\"/home/${{ secrets.VM_USER }}/Cloud-Computing-Project\"
+            fi
+            cd \"\$DEPLOY_DIR\" || exit 1
             docker compose pull
             docker compose up -d
           " 
