@@ -29,14 +29,12 @@ jobs:
           docker push ${{ secrets.DOCKERHUB_USERNAME }}/cea-app:latest
 
       - name: Deploy to VM via SSH
-        uses: appleboy/ssh-action@v1.0.3
-        with:
-          host: ${{ secrets.VM_HOST }}
-          username: ${{ secrets.VM_USER }}
-          key: ${{ secrets.VM_SSH_KEY }}
-          script: |
-            echo "${{ secrets.VM_SSH_KEY }}" | base64 -d > /tmp/deploy_key
-            chmod 600 /tmp/deploy_key
+        run: |
+          mkdir -p ~/.ssh
+          echo "${{ secrets.VM_SSH_KEY }}" | base64 -d > ~/.ssh/id_rsa
+          chmod 600 ~/.ssh/id_rsa
+          ssh -o StrictHostKeyChecking=no -i ~/.ssh/id_rsa ${{ secrets.VM_USER }}@${{ secrets.VM_HOST }} "
             cd /home/azureuser/app || exit 1
             docker compose pull
-            docker compose up -d 
+            docker compose up -d
+          " 
