@@ -1,13 +1,11 @@
-version: '3.8'
 services:
   web:
-    image: YOUR_DOCKERHUB_USERNAME/cea-web:latest
+    image: sonic12345/cea-web:latest
     ports:
       - "80:80"
     depends_on:
       - app
-
   app:
-    image: YOUR_DOCKERHUB_USERNAME/cea-app:latest
+    image: sonic12345/cea-app:latest
     environment:
-      - DATABASE_URL=${DATABASE_URL}
+      - DATABASE_URL=postgresql://dbadmin:Sonic%4012345@cea-pg-sabrina.postgres.database.azure.com:5432/postgres?sslmode=require 

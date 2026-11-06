@@ -1,10 +1,125 @@
 <!DOCTYPE html>
 <html>
-<head><title>CEA Three-Tier App</title></head>
+<head>
+    <title>Three-Tier CRUD App</title>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 40px; background-color: #f4f4f9; }
+        .container { background: white; padding: 20px; border-radius: 8px; box-shadow: 0 0 10px rgba(0,0,0,0.1); max-width: 600px; margin: auto; }
+        input, button { padding: 10px; margin: 5px 0; width: 100%; box-sizing: border-box; }
+        button { background-color: #007bff; color: white; border: none; cursor: pointer; font-weight: bold; }
+        button:hover { background-color: #0056b3; }
+        .user-card { border: 1px solid #ddd; padding: 15px; margin-top: 10px; border-radius: 5px; display: flex; justify-content: space-between; align-items: center; }
+        .action-btns { display: flex; gap: 5px; }
+        .edit-btn { background-color: #ffc107; color: black; width: auto; padding: 5px 15px; }
+        .delete-btn { background-color: #dc3545; width: auto; padding: 5px 15px; }
+        .cancel-btn { background-color: #6c757d; width: auto; padding: 5px 15px; display: none; }
+    </style>
+</head>
 <body>
-    <h1>Web Tier is Working!</h1>
-    <p>This is served by Nginx.</p>
-    <button onclick="fetch('/api/health').then(r=>r.text()).then(t=>alert(t))">Test App Tier</button>
-    <button onclick="fetch('/api/db').then(r=>r.text()).then(t=>alert(t))">Test Database</button>
+    <div class="container">
+        <h1>Three-Tier CRUD Application</h1>
+        
+        <h3 id="form-title">Add New User</h3>
+        <input type="hidden" id="user-id">
+        <input type="text" id="name" placeholder="Enter Name">
+        <input type="email" id="email" placeholder="Enter Email">
+        <button id="submit-btn" onclick="saveUser()">Add User</button>
+        <button id="cancel-btn" class="cancel-btn" onclick="resetForm()">Cancel Edit</button>
+
+        <h3>User List</h3>
+        <div id="user-list">Loading...</div>
+    </div>
+
+    <script>
+        const API = '/api';
+        let isEditing = false;
+
+        // READ (Get Users)
+        async function fetchUsers() {
+            try {
+                const res = await fetch(`${API}/users`);
+                const users = await res.json();
+                const list = document.getElementById('user-list');
+                list.innerHTML = '';
+                
+                if(users.length === 0) {
+                    list.innerHTML = '<p>No users found.</p>';
+                    return;
+                }
+
+                users.forEach(user => {
+                    list.innerHTML += `
+                        <div class="user-card">
+                            <div>
+                                <strong>${user.name}</strong><br>
+                                <small>${user.email}</small>
+                            </div>
+                            <div class="action-btns">
+                                <button class="edit-btn" onclick="editUser(${user.id}, '${user.name}', '${user.email}')">Edit</button>
+                                <button class="delete-btn" onclick="deleteUser(${user.id})">Delete</button>
+                            </div>
+                        </div>
+                    `;
+                });
+            } catch (error) {
+                document.getElementById('user-list').innerHTML = '<p style="color:red">Error connecting to App Tier.</p>';
+            }
+        }
+
+        // CREATE or UPDATE (Save User)
+        async function saveUser() {
+            const id = document.getElementById('user-id').value;
+            const name = document.getElementById('name').value;
+            const email = document.getElementById('email').value;
+            
+            if (!name || !email) return alert('Please fill both fields!');
+
+            const method = isEditing ? 'PUT' : 'POST';
+            const url = isEditing ? `${API}/users/${id}` : `${API}/users`;
+
+            await fetch(url, {
+                method: method,
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ name, email })
+            });
+            
+            resetForm();
+            fetchUsers();
+        }
+
+        // Edit Button Click
+        function editUser(id, name, email) {
+            isEditing = true;
+            document.getElementById('user-id').value = id;
+            document.getElementById('name').value = name;
+            document.getElementById('email').value = email;
+            
+            document.getElementById('form-title').innerText = "Edit User";
+            document.getElementById('submit-btn').innerText = "Update User";
+            document.getElementById('cancel-btn').style.display = "inline-block";
+        }
+
+        // Cancel Edit
+        function resetForm() {
+            isEditing = false;
+            document.getElementById('user-id').value = '';
+            document.getElementById('name').value = '';
+            document.getElementById('email').value = '';
+            
+            document.getElementById('form-title').innerText = "Add New User";
+            document.getElementById('submit-btn').innerText = "Add User";
+            document.getElementById('cancel-btn').style.display = "none";
+        }
+
+        // DELETE (Delete User)
+        async function deleteUser(id) {
+            if(confirm('Delete this user?')) {
+                await fetch(`${API}/users/${id}`, { method: 'DELETE' });
+                fetchUsers();
+            }
+        }
+
+        fetchUsers();
+    </script>
 </body>
-</html>
+</html> 
