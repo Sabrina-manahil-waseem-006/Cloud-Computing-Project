@@ -1,125 +1,200 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
-    <title>Three-Tier CRUD App</title>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Student Assignment Tracker | Azure Cloud</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600&display=swap" rel="stylesheet">
     <style>
-        body { font-family: Arial, sans-serif; margin: 40px; background-color: #f4f4f9; }
-        .container { background: white; padding: 20px; border-radius: 8px; box-shadow: 0 0 10px rgba(0,0,0,0.1); max-width: 600px; margin: auto; }
-        input, button { padding: 10px; margin: 5px 0; width: 100%; box-sizing: border-box; }
-        button { background-color: #007bff; color: white; border: none; cursor: pointer; font-weight: bold; }
-        button:hover { background-color: #0056b3; }
-        .user-card { border: 1px solid #ddd; padding: 15px; margin-top: 10px; border-radius: 5px; display: flex; justify-content: space-between; align-items: center; }
-        .action-btns { display: flex; gap: 5px; }
-        .edit-btn { background-color: #ffc107; color: black; width: auto; padding: 5px 15px; }
-        .delete-btn { background-color: #dc3545; width: auto; padding: 5px 15px; }
-        .cancel-btn { background-color: #6c757d; width: auto; padding: 5px 15px; display: none; }
+        :root { 
+            --primary: #4f46e5; 
+            --bg: #f1f5f9; 
+            --card: #ffffff; 
+            --text: #1e293b;
+            --border: #e2e8f0;
+        }
+        * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Inter', sans-serif; }
+        body { background-color: var(--bg); color: var(--text); padding: 40px 20px; }
+        
+        .app-container { max-width: 850px; margin: auto; }
+        
+        .header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 30px; }
+        .header h1 { font-size: 1.8rem; color: var(--primary); }
+        .header p { color: #64748b; font-size: 0.9rem; margin-top: 4px; }
+        
+        .card { background: var(--card); border-radius: 12px; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.05); padding: 25px; border: 1px solid var(--border); margin-bottom: 25px; }
+        
+        .input-group { display: grid; grid-template-columns: 2fr 1fr 1fr auto; gap: 12px; align-items: center; }
+        @media (max-width: 768px) { .input-group { grid-template-columns: 1fr; } }
+        
+        input, select { padding: 12px 16px; border: 1px solid var(--border); border-radius: 8px; font-size: 0.95rem; outline: none; transition: 0.2s; background: #f8fafc; }
+        input:focus, select:focus { border-color: var(--primary); background: #fff; box-shadow: 0 0 0 3px rgba(79, 70, 229, 0.1); }
+        
+        .btn-add { padding: 12px 24px; background: var(--primary); color: white; border: none; border-radius: 8px; font-weight: 600; cursor: pointer; transition: 0.2s; }
+        .btn-add:hover { background: #4338ca; transform: translateY(-1px); }
+        
+        .stats-bar { display: flex; gap: 20px; margin-bottom: 20px; }
+        .stat { background: #e0e7ff; color: #3730a3; padding: 10px 15px; border-radius: 8px; font-weight: 600; font-size: 0.9rem; }
+        
+        .task-table { width: 100%; border-collapse: collapse; margin-top: 10px; }
+        .task-table th { text-align: left; padding: 12px; color: #64748b; font-size: 0.85rem; text-transform: uppercase; border-bottom: 2px solid var(--border); }
+        .task-table td { padding: 16px 12px; border-bottom: 1px solid var(--border); vertical-align: middle; }
+        
+        .task-table tr:last-child td { border-bottom: none; }
+        .task-table tr.completed td { background: #f8fafc; opacity: 0.6; }
+        .task-table tr.completed .title { text-decoration: line-through; color: #64748b; }
+        
+        .title { font-weight: 600; font-size: 1rem; }
+        .course { display: block; font-size: 0.8rem; color: #64748b; margin-top: 4px; }
+        
+        .badge { padding: 4px 10px; border-radius: 20px; font-size: 0.75rem; font-weight: 600; display: inline-block; }
+        .badge.High { background: #fee2e2; color: #b91c1c; }
+        .badge.Medium { background: #fef3c7; color: #b45309; }
+        .badge.Low { background: #dcfce7; color: #15803d; }
+        .badge.Completed { background: #dcfce7; color: #15803d; }
+        .badge.Pending { background: #fee2e2; color: #b91c1c; }
+        
+        .actions { display: flex; gap: 8px; justify-content: flex-end; }
+        .btn-icon { padding: 8px; border: none; border-radius: 6px; cursor: pointer; font-weight: 600; font-size: 0.8rem; transition: 0.2s; }
+        .btn-done { background: #f1f5f9; color: #334155; }
+        .btn-done:hover { background: #e2e8f0; }
+        .btn-del { background: #fee2e2; color: #b91c1c; }
+        .btn-del:hover { background: #fecaca; }
     </style>
 </head>
 <body>
-    <div class="container">
-        <h1>Three-Tier CRUD Application</h1>
-        
-        <h3 id="form-title">Add New User</h3>
-        <input type="hidden" id="user-id">
-        <input type="text" id="name" placeholder="Enter Name">
-        <input type="email" id="email" placeholder="Enter Email">
-        <button id="submit-btn" onclick="saveUser()">Add User</button>
-        <button id="cancel-btn" class="cancel-btn" onclick="resetForm()">Cancel Edit</button>
 
-        <h3>User List</h3>
-        <div id="user-list">Loading...</div>
+    <div class="app-container">
+        <div class="header">
+            <div>
+                <h1>🎓 Student Assignment Tracker</h1>
+                <p>Three-Tier Cloud Architecture deployed on Azure</p>
+            </div>
+        </div>
+
+        <div class="card">
+            <div class="input-group">
+                <input type="text" id="task-title" placeholder="Assignment Name (e.g., Cloud Computing CEA)">
+                <input type="text" id="course-name" placeholder="Course (e.g., SE-490)">
+                <select id="task-priority">
+                    <option value="High">🔴 High Priority</option>
+                    <option value="Medium" selected>🟡 Medium</option>
+                    <option value="Low">🟢 Low</option>
+                </select>
+                <button class="btn-add" onclick="addTask()">+ Add Task</button>
+            </div>
+        </div>
+
+        <div class="stats-bar">
+            <div class="stat" id="stat-pending">0 Pending</div>
+            <div class="stat" style="background:#dcfce7; color:#15803d;" id="stat-done">0 Completed</div>
+        </div>
+
+        <div class="card" style="padding: 10px 25px;">
+            <table class="task-table" id="task-table">
+                <thead>
+                    <tr>
+                        <th>Assignment</th>
+                        <th>Priority</th>
+                        <th>Status</th>
+                        <th style="text-align: right;">Actions</th>
+                    </tr>
+                </thead>
+                <tbody id="task-list">
+                    <tr><td colspan="4" style="text-align:center; color:#94a3b8; padding: 30px;">Loading assignments...</td></tr>
+                </tbody>
+            </table>
+        </div>
     </div>
 
     <script>
         const API = '/api';
-        let isEditing = false;
 
-        // READ (Get Users)
-        async function fetchUsers() {
+        async function fetchTasks() {
             try {
-                const res = await fetch(`${API}/users`);
-                const users = await res.json();
-                const list = document.getElementById('user-list');
+                const res = await fetch(`${API}/tasks`);
+                const tasks = await res.json();
+                const list = document.getElementById('task-list');
                 list.innerHTML = '';
                 
-                if(users.length === 0) {
-                    list.innerHTML = '<p>No users found.</p>';
+                let pendingCount = 0;
+                let doneCount = 0;
+
+                if (tasks.length === 0) {
+                    list.innerHTML = '<tr><td colspan="4" style="text-align:center; color:#94a3b8; padding: 30px;">No assignments yet. Add your first one above!</td></tr>';
+                    document.getElementById('stat-pending').innerText = `0 Pending`;
+                    document.getElementById('stat-done').innerText = `0 Completed`;
                     return;
                 }
 
-                users.forEach(user => {
+                tasks.forEach(task => {
+                    const isCompleted = task.status === 'Completed';
+                    if (isCompleted) doneCount++; else pendingCount++;
+
+                    // Note: Humein backend mein 'course' save karne ki zaroorat hogi, 
+                    // abhi ke liye hum task.title ke sath handle kar rahe hain.
+                    
                     list.innerHTML += `
-                        <div class="user-card">
-                            <div>
-                                <strong>${user.name}</strong><br>
-                                <small>${user.email}</small>
-                            </div>
-                            <div class="action-btns">
-                                <button class="edit-btn" onclick="editUser(${user.id}, '${user.name}', '${user.email}')">Edit</button>
-                                <button class="delete-btn" onclick="deleteUser(${user.id})">Delete</button>
-                            </div>
-                        </div>
+                        <tr class="${isCompleted ? 'completed' : ''}">
+                            <td>
+                                <span class="title">${task.title}</span>
+                            </td>
+                            <td><span class="badge ${task.priority}">${task.priority}</span></td>
+                            <td><span class="badge ${task.status}">${task.status}</span></td>
+                            <td style="text-align: right;">
+                                <div class="actions">
+                                    <button class="btn-icon btn-done" onclick="toggleStatus(${task.id}, '${task.status}')">
+                                        ${isCompleted ? '↩ Undo' : '✓ Done'}
+                                    </button>
+                                    <button class="btn-icon btn-del" onclick="deleteTask(${task.id})">🗑 Del</button>
+                                </div>
+                            </td>
+                        </tr>
                     `;
                 });
+
+                document.getElementById('stat-pending').innerText = `${pendingCount} Pending`;
+                document.getElementById('stat-done').innerText = `${doneCount} Completed`;
+
             } catch (error) {
-                document.getElementById('user-list').innerHTML = '<p style="color:red">Error connecting to App Tier.</p>';
+                document.getElementById('task-list').innerHTML = '<tr><td colspan="4" style="text-align:center; color:#ef4444; padding: 30px;">Error connecting to App Tier.</td></tr>';
             }
         }
 
-        // CREATE or UPDATE (Save User)
-        async function saveUser() {
-            const id = document.getElementById('user-id').value;
-            const name = document.getElementById('name').value;
-            const email = document.getElementById('email').value;
-            
-            if (!name || !email) return alert('Please fill both fields!');
+        async function addTask() {
+            const title = document.getElementById('task-title').value;
+            const priority = document.getElementById('task-priority').value;
 
-            const method = isEditing ? 'PUT' : 'POST';
-            const url = isEditing ? `${API}/users/${id}` : `${API}/users`;
+            if (!title) return alert('Please enter an assignment name!');
 
-            await fetch(url, {
-                method: method,
+            await fetch(`${API}/tasks`, {
+                method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ name, email })
+                body: JSON.stringify({ title: title, priority: priority })
             });
-            
-            resetForm();
-            fetchUsers();
+
+            document.getElementById('task-title').value = '';
+            fetchTasks();
         }
 
-        // Edit Button Click
-        function editUser(id, name, email) {
-            isEditing = true;
-            document.getElementById('user-id').value = id;
-            document.getElementById('name').value = name;
-            document.getElementById('email').value = email;
-            
-            document.getElementById('form-title').innerText = "Edit User";
-            document.getElementById('submit-btn').innerText = "Update User";
-            document.getElementById('cancel-btn').style.display = "inline-block";
+        async function toggleStatus(id, currentStatus) {
+            const newStatus = currentStatus === 'Completed' ? 'Pending' : 'Completed';
+            await fetch(`${API}/tasks/${id}`, {
+                method: 'PUT',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ status: newStatus })
+            });
+            fetchTasks();
         }
 
-        // Cancel Edit
-        function resetForm() {
-            isEditing = false;
-            document.getElementById('user-id').value = '';
-            document.getElementById('name').value = '';
-            document.getElementById('email').value = '';
-            
-            document.getElementById('form-title').innerText = "Add New User";
-            document.getElementById('submit-btn').innerText = "Add User";
-            document.getElementById('cancel-btn').style.display = "none";
-        }
-
-        // DELETE (Delete User)
-        async function deleteUser(id) {
-            if(confirm('Delete this user?')) {
-                await fetch(`${API}/users/${id}`, { method: 'DELETE' });
-                fetchUsers();
+        async function deleteTask(id) {
+            if (confirm('Delete this assignment?')) {
+                await fetch(`${API}/tasks/${id}`, { method: 'DELETE' });
+                fetchTasks();
             }
         }
 
-        fetchUsers();
+        fetchTasks();
     </script>
 </body>
 </html> 
